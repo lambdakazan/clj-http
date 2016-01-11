@@ -6,7 +6,7 @@
            (java.security KeyStore)
            (java.security.cert X509Certificate)
            (javax.net.ssl SSLSession SSLSocket)
-           (org.apache.http.config RegistryBuilder)
+           (org.apache.http.config RegistryBuilder Registry)
            (org.apache.http.conn ClientConnectionManager)
            (org.apache.http.conn.params ConnPerRouteBean)
            (org.apache.http.conn HttpClientConnectionManager)
@@ -79,22 +79,25 @@
   proxied using a SOCKS proxy."
   [^String hostname ^Integer port]
   (let [socket-factory #(socks-proxied-socket hostname port)
-        reg (doto (SchemeRegistry.)
-              (.register
+        reg (doto (RegistryBuilder/create)
+              (.register "https"
                (Scheme. "https" 443 (SSLGenericSocketFactory socket-factory)))
-              (.register
-               (Scheme. "http" 80 (PlainGenericSocketFactory socket-factory))))]
+              (.register "http"
+                         (Scheme. "http" 80 (PlainGenericSocketFactory socket-factory)))
+              (.build))]
     (PoolingHttpClientConnectionManager. reg)))
 
 (def insecure-scheme-registry
-  (doto (SchemeRegistry.)
-    (.register (Scheme. "http" 80 (PlainSocketFactory/getSocketFactory)))
-    (.register (Scheme. "https" 443 insecure-socket-factory))))
+  (-> (RegistryBuilder/create)
+      (.register "http" (Scheme. "http" 80 (PlainSocketFactory/getSocketFactory)))
+      (.register "https" (Scheme. "https" 443 insecure-socket-factory))
+      (.build)))
 
 (def regular-scheme-registry
-  (doto (SchemeRegistry.)
-    (.register (Scheme. "http" 80 (PlainSocketFactory/getSocketFactory)))
-    (.register (Scheme. "https" 443 (SSLSocketFactory/getSocketFactory)))))
+  (-> (RegistryBuilder/create)
+      (.register "http" (Scheme. "http" 80 (PlainSocketFactory/getSocketFactory)))
+      (.register "https" (Scheme. "https" 443 (SSLSocketFactory/getSocketFactory)))
+      (.build)))
 
 (defn ^KeyStore get-keystore*
   [keystore-file keystore-type ^String keystore-pass]
