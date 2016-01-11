@@ -18,7 +18,7 @@
                                      SSLConnectionSocketFactory SSLContexts)
            (org.apache.http.conn.socket PlainConnectionSocketFactory)
            (org.apache.http.impl.conn BasicClientConnectionManager
-                                      PoolingClientConnectionManager
+                                      PoolingHttpClientConnectionManager
                                       SchemeRegistryFactory
                                       SingleClientConnManager)
            (org.apache.http.impl.conn BasicHttpClientConnectionManager
@@ -84,7 +84,7 @@
                (Scheme. "https" 443 (SSLGenericSocketFactory socket-factory)))
               (.register
                (Scheme. "http" 80 (PlainGenericSocketFactory socket-factory))))]
-    (PoolingClientConnectionManager. reg)))
+    (PoolingHttpClientConnectionManager. reg)))
 
 (def insecure-scheme-registry
   (doto (SchemeRegistry.)
@@ -135,10 +135,10 @@
 
 ;; need the fully qualified class name because this fn is later used in a
 ;; macro from a different ns
-(defn ^org.apache.http.impl.conn.PoolingClientConnectionManager
+(defn ^org.apache.http.impl.conn.PoolingHttpClientConnectionManager
   make-reusable-conn-manager*
   "Given an timeout and optional insecure? flag, create a
-  PoolingClientConnectionManager with <timeout> seconds set as the
+  PoolingHttpClientConnectionManager with <timeout> seconds set as the
   timeout value."
   [{:keys [timeout keystore trust-store] :as config}]
   (let [registry (cond
@@ -148,7 +148,7 @@
                    (get-keystore-scheme-registry config)
 
                    :else regular-scheme-registry)]
-    (PoolingClientConnectionManager.
+    (PoolingHttpClientConnectionManager.
      registry timeout java.util.concurrent.TimeUnit/SECONDS)))
 
 (def dmcpr ConnPerRouteBean/DEFAULT_MAX_CONNECTIONS_PER_ROUTE)
@@ -157,7 +157,7 @@
   (not (or (instance? SingleClientConnManager conn-mgr)
            (instance? BasicClientConnectionManager conn-mgr))))
 
-(defn ^PoolingClientConnectionManager make-reusable-conn-manager
+(defn ^PoolingHttpClientConnectionManager make-reusable-conn-manager
   "Creates a default pooling connection manager with the specified options.
 
   The following options are supported:
