@@ -54,14 +54,15 @@
                  (headers/header-map)))))
 
 (defn get-redirect-strategy [redirect-strategy]
-  (case redirect-strategy
-    :none (reify RedirectStrategy
-            (getRedirect [this request response context] nil)
-            (isRedirected [this request response context] false))
-    :default (DefaultRedirectStrategy/INSTANCE)
-    :lax (LaxRedirectStrategy.)
-    nil (DefaultRedirectStrategy/INSTANCE)
-    (DefaultRedirectStrategy/INSTANCE)))
+  (let [simple-redirect-strategy (reify RedirectStrategy
+                                   (getRedirect [this request response context] nil)
+                                   (isRedirected [this request response context] false))]
+    (case redirect-strategy
+      :none simple-redirect-strategy
+      :default (DefaultRedirectStrategy/INSTANCE)
+      :lax (LaxRedirectStrategy.)
+      nil simple-redirect-strategy
+      simple-redirect-strategy)))
 
 (defn add-retry-handler [builder handler]
   (when handler
