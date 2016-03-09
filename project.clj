@@ -28,6 +28,11 @@
                                   [ring/ring-devel "1.4.0"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}}
+  :repositories [["snapshots" {:url "http://repo.lambdasoft.ru/artifactory/libs-snapshot-local"
+                               :sign-releases false
+                               :creds gpg}]
+                 ["releases" {:url "http://repo.lambdasoft.ru/artifactory/libs-release-local"
+                              :creds gpg}]]
   :aliases {"all" ["with-profile" "dev,1.6:dev,1.7:dev"]}
   :plugins [[codox "0.6.4"]]
   :test-selectors {:default  #(not (:integration %))
