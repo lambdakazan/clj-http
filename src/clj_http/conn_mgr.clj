@@ -114,6 +114,7 @@
         factory (SSLConnectionSocketFactory.
                  ssl-context hostname-verifier )]
     (-> (RegistryBuilder/create)
+        (.register "http" (PlainConnectionSocketFactory/getSocketFactory))
         (.register "https" factory)
         (.build))))
 
